@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Единство слов - Литературная карта России</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background: linear-gradient(145deg, #f0ebe0 0%, #e0d5c2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 30px; }
+        .exhibition-container { max-width: 1300px; width: 100%; background: rgba(255, 248, 235, 0.96); border-radius: 48px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; backdrop-filter: blur(2px); }
+        .exhibition-header { background: linear-gradient(135deg, #1a3c34 0%, #2c5a4a 100%); padding: 30px 40px; text-align: center; color: white; border-bottom: 3px solid #d4af37; }
+        .exhibition-header h1 { font-size: 2.8rem; letter-spacing: 2px; font-weight: 700; }
+        .exhibition-header p { font-size: 1.2rem; margin-top: 10px; opacity: 0.9; }
+        .map-section { padding: 30px; background: #fffcf7; }
+        .map-title { text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 500; color: #2c3e2f; border-left: 5px solid #d4af37; padding-left: 20px; margin-left: 20px; }
+        #russia-map { width: 100%; height: 550px; margin: 0 auto; background-color: #eef4ff; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .info-panel { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; padding: 20px; background: #f9f5ee; border-radius: 30px; }
+        .legend-dot { width: 12px; height: 12px; background: #e84e1b; border-radius: 50%; box-shadow: 0 0 0 2px white, 0 0 0 3px #e84e1b; }
+        .footer-note { text-align: center; padding: 20px; background: #1a3c34; color: #ddd; font-size: 0.8rem; }
+        @media (max-width: 768px) { #russia-map { height: 400px; } .exhibition-header h1 { font-size: 1.8rem; } }
+        .custom-book-tooltip { position: absolute; background: rgba(30,30,35,0.95); backdrop-filter: blur(10px); color: #fff; padding: 15px; border-radius: 20px; max-width: 260px; pointer-events: none; z-index: 1000; border-left: 5px solid #d4af37; transition: opacity 0.2s; opacity: 0; visibility: hidden; font-size: 0.9rem; }
+        .custom-book-tooltip h4 { margin: 0 0 5px; color: #ffd966; }
+        .custom-book-tooltip .author { font-size: 0.8rem; margin-bottom: 8px; color: #ccc; }
+        .custom-book-tooltip .desc { font-size: 0.75rem; line-height: 1.4; border-top: 1px solid #444; padding-top: 6px; }
+        .region-badge { position: absolute; top: -10px; right: 15px; background: #d4af37; color: #1a3c34; font-size: 0.7rem; padding: 2px 10px; border-radius: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="exhibition-container">
+    <div class="exhibition-header">
+        <h1>📚 Единство слов</h1>
+        <p>Литературная карта России • Книги, объединяющие народы</p>
+        <div style="margin-top: 10px; font-size: 0.9rem;">2026 год — Год единства народов Российской Федерации</div>
+    </div>
+    <div class="map-section">
+        <div class="map-title">🗺️ Путешествие по литературным регионам <span style="background:#d4af37; padding:2px 10px; border-radius:20px; font-size:0.9rem;">Наведи на точку</span></div>
+        <div id="russia-map"></div>
+        <div class="info-panel">
+            <div style="display:flex; gap:15px;"><div class="legend-dot"></div><span>Регионы с книжными выставками</span></div>
+            <div>💡 Наведите курсор на маркер, чтобы увидеть книгу</div>
+        </div>
+    </div>
+    <div class="footer-note">«Через книгу — к единству духа и культуры народов России»</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap-world-mill.js"></script>
+
+<script>
+$(function(){
+    // Данные книг по регионам
+    const booksData = {
+        "RU-MOW": { title: "«Сказки народов России»", author: "М.В. Голованова, О.Ю. Шарапова", description: "Сборник, объединяющий мудрость и традиции разных народов нашей страны.", cover: "", link: "#" },
+        "RU-SPE": { title: "«Сказки народов СССР»", author: "Сост. В.П. Аникин", description: "Классическое собрание сказок, знакомящее с фольклором союзных республик.", cover: "", link: "#" },
+        "RU-KHA": { title: "«Лики древнего Амура. Петроглифы Сакачи-Аляна»", author: "", description: "Уникальное издание о наскальных рисунках — свидетелях древней истории Приамурья.", cover: "", link: "#" },
+        "RU-AMU": { title: "«Эвенки Приамурья: оленная тропа истории и культуры»", author: "А.П. Забияко и др.", description: "Исследование культуры и быта эвенков, их пути сквозь века.", cover: "", link: "#" },
+        "RU-ZAB": { title: "«В стране трёх солнц»", author: "А. Деревянко", description: "Книга о природе и людях Забайкалья, полная удивительных открытий.", cover: "", link: "#" },
+        "RU-EVE": { title: "«Диахронная знакомая информация Эвенков-орочонов»", author: "А.И. Мазин, И.А. Мазин", description: "Этнографическое исследование языка и традиций эвенков.", cover: "", link: "#" },
+        "RU-PRI": { title: "«Представления Эвенков Приамурья об окружающем мире»", author: "А.И. Мазин, И.А. Мазин", description: "Уникальный взгляд на мироздание глазами коренного народа.", cover: "", link: "#" },
+        "RU-SIB": { title: "«В поисках оленя золотые рога»", author: "А.П. Деревянко", description: "Приключенческая повесть о тайге и её обитателях.", cover: "", link: "#" },
+        "RU-ALT": { title: "Авторский сборник (Том четвёртый)", author: "В. Шукшин", description: "Произведения известного писателя, режиссёра и актёра.", cover: "", link: "#" },
+        "RU-EVK": { title: "«Амурские Эвенки»", author: "В. Евдокимов", description: "История и культура эвенков, живущих на берегах Амура.", cover: "", link: "#" },
+        "RU-PRIM": { title: "«Дерсу Узала»", author: "В.К. Арсеньев", description: "Знаменитая книга о дружбе путешественника и нанайского охотника, о единстве с природой.", cover: "", link: "#" },
+        "RU-IRK": { title: "«Прощание с Матёрой»", author: "Валентин Распутин", description: "Глубокое повествование о сибирской деревне, связи поколений и ценности родной земли.", cover: "", link: "#" },
+        "RU-NSK": { title: "«Найхинцы. Павел-сын Акиану»", author: "Григорий Ходжер", description: "Роман о жизни нанайского народа, его традициях и судьбах.", cover: "", link: "#" }
+    };
+
+    // Маркеры (регионы и координаты)
+    const markers = [
+        { latLng: [55.7558, 37.6176], name: "Москва", regionKey: "RU-MOW" },
+        { latLng: [59.9343, 30.3351], name: "Санкт-Петербург", regionKey: "RU-SPE" },
+        { latLng: [48.4803, 135.0719], name: "Хабаровск", regionKey: "RU-KHA" },
+        { latLng: [50.2906, 127.5275], name: "Амурская обл.", regionKey: "RU-AMU" },
+        { latLng: [52.0333, 113.5], name: "Забайкалье", regionKey: "RU-ZAB" },
+        { latLng: [60.0, 100.0], name: "Эвенкия", regionKey: "RU-EVE" },
+        { latLng: [45.3333, 134.6667], name: "Приморье", regionKey: "RU-PRI" },
+        { latLng: [55.0, 82.0], name: "Сибирь", regionKey: "RU-SIB" },
+        { latLng: [51.5, 85.0], name: "Алтай", regionKey: "RU-ALT" },
+        { latLng: [54.0, 128.0], name: "Верхнеамурье", regionKey: "RU-EVK" },
+        { latLng: [43.1155, 131.8855], name: "Владивосток", regionKey: "RU-PRIM" },
+        { latLng: [52.2833, 104.2833], name: "Иркутск", regionKey: "RU-IRK" },
+        { latLng: [48.7167, 135.15], name: "Найхин (Нанайск)", regionKey: "RU-NSK" }
+    ];
+
+    const getBookByKey = (key) => booksData[key] || { title: "Книга региона", author: "", description: "Информация о книге появится позже.", cover: "", link: "#" };
+
+    const customTooltip = $('<div class="custom-book-tooltip"></div>').appendTo('body');
+
+    $('#russia-map').vectorMap({
+        map: 'world_mill',
+        backgroundColor: '#eef4ff',
+        zoomOnScroll: true,
+        zoomButtons: true,
+        focusOn: { x: 0.5, y: 0.5, scale: 1.2, lat: 62, lng: 95 },
+        regionStyle: { initial: { fill: '#cbd5e1', "fill-opacity": 0.7, stroke: '#fff' }, hover: { fill: '#a0aec0', cursor: 'pointer' } },
+        markers: markers,
+        markerStyle: { initial: { fill: '#e84e1b', stroke: '#fff', r: 8 }, hover: { fill: '#d4af37', r: 10, cursor: 'pointer' } },
+        onMarkerTipShow: function(e, label, code) { e.preventDefault(); return false; },
+        onRegionTipShow: function(e, label, code) { e.preventDefault(); return false; },
+        onMarkerOver: function(e, code, marker) {
+            const markerObj = markers[code];
+            if(markerObj) {
+                const book = getBookByKey(markerObj.regionKey);
+                customTooltip.html(`
+                    <div class="region-badge">📌 ${markerObj.name}</div>
+                    <h4>📖 ${book.title}</h4>
+                    <div class="author">✍️ ${book.author || 'Народное творчество'}</div>
+                    <div class="desc">${book.description.substring(0, 120)}</div>
+                `);
+                customTooltip.css({ top: (e.pageY - 120) + 'px', left: (e.pageX + 15) + 'px', opacity: 1, visibility: 'visible' });
+            }
+        },
+        onMarkerOut: function() { customTooltip.css({ opacity: 0, visibility: 'hidden' }); },
+        onMarkerClick: function(e, code) {
+            const markerObj = markers[code];
+            if(markerObj) {
+                const book = getBookByKey(markerObj.regionKey);
+                alert(`📕 ${book.title}\n\n${book.author}\n\n${book.description}`);
+            }
+        }
+    });
+    $(document).on('mousemove', function(e) {
+        if(customTooltip.css('visibility') === 'visible') {
+            customTooltip.css({ top: (e.pageY - 120) + 'px', left: (e.pageX + 15) + 'px' });
+        }
+    });
+});
+</script>
+</body>
+</html>
